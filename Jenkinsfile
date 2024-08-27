@@ -6,7 +6,7 @@ node {
     }
 
     stage('Build image') {
-       app = docker.build("devopswithsam/jenkins-flask")
+       app = docker.build("medlas/jenkins-flask")
     }
 
     stage('Test image') {
