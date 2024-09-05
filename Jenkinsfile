@@ -37,14 +37,14 @@ pipeline {
             }
         }
 
-        // stage('Stop and Remove Containers') {
-        //     steps {
-        //         script {
-        //             // Stop and remove containers created by Docker Compose
-        //             sh 'docker-compose down'
-        //         }
-        //     }
-        // }
+        stage('Stop and Remove Containers') {
+            steps {
+                script {
+                    // Stop and remove containers created by Docker Compose
+                    sh 'docker-compose down'
+                }
+            }
+        }
 
         stage('Push image') {
             steps {

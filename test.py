@@ -26,10 +26,15 @@ def check_internal_server_error(url, session):
 
 if __name__ == "__main__":
     # Odoo server URL
-    odoo_url = "http://localhost:8066/web"
+    odoo_url = "http://localhost:8069/web"
     
     # Create a requests session
     session = requests.Session()
 
     # Check the Odoo server
     check_internal_server_error(odoo_url, session)
+
+
+    # microk8s kubectl port-forward svc/argocd-server -n argocd 8081:443
+    # mikrok8s stop/start // microk8s dashboard-proxy
+
