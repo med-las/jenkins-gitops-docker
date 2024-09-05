@@ -25,16 +25,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  test:
-    image: medlas/odoo:${DOCKER_TAG}
-    container_name: odoo_test
-    volumes:
-      - .:/mnt/extra-addons
-    command: python3 /mnt/extra-addons/test.py
-    depends_on:
-      - odoo
-      - db
-
 volumes:
   odoo_data:
   postgres_data:
