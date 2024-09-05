@@ -1,68 +1,56 @@
-pipeline {
-    agent any
+node {
+    def app
 
-    stages {
-        stage('Clone repository') {
-            steps {
-                checkout scm
-            }
-        }
+    stage('Clone repository') {
+        checkout scm
+    }
 
-        stage('Build image') {
-            steps {
-                script {
-                    // Build Docker image
-                    def app = docker.build("medlas/odoo:${env.BUILD_NUMBER}")
-                }
-            }
-        }
+    stage('Install Docker Compose') {
+        sh '''
+        if ! [ -x "$(command -v docker-compose)" ]; then
+            echo "Docker Compose not found. Installing..."
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+        else
+            echo "Docker Compose is already installed."
+        fi
+        '''
+    }
 
-        stage('Run Docker Compose') {
-            steps {
-                script {
-                    // Create and start Docker containers using Docker Compose
-                    sh 'docker-compose up --build -d'
-                }
-            }
-        }
+    stage('Build image') {
+       app = docker.build("medlas/odoo:${env.BUILD_NUMBER}")
+    }
 
-        stage('Test image') {
-            steps {
-                script {
-                    // Run tests using Docker Compose
-                    sh 'docker-compose run --rm test'
-                }
-            }
-        }
+    stage('Run Docker Compose') {
+        sh '''
+        docker-compose up --build -d
+        '''
+    }
 
-        stage('Stop and Remove Containers') {
-            steps {
-                script {
-                    // Stop and remove containers created by Docker Compose
-                    sh 'docker-compose down'
-                }
-            }
+    stage('Test image') {
+        app.inside {
+            sh 'echo "Running Odoo tests"'
+            // Install the required Python packages for testing
+            sh 'pip install requests'
+            // Run the test script
+            sh 'python test.py'
         }
+    }
 
-        stage('Push image') {
-            steps {
-                script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-                        // Push the Docker image
-                        def app = docker.image("medlas/odoo:${env.BUILD_NUMBER}")
-                        app.push("${env.BUILD_NUMBER}")
-                    }
-                }
-            }
-        }
+    stage('Stop and Remove Containers') {
+        sh '''
+        docker-compose down
+        '''
+    }
 
-        stage('Trigger ManifestUpdate') {
-            steps {
-                script {
-                    echo "triggering updatemanifestjob"
-                    build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.BUILD_NUMBER)]
-                }
-            }
+    stage('Push image') {
+        docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+            app.push("${env.BUILD_NUMBER}")
         }
+    }
+    
+    stage('Trigger ManifestUpdate') {
+        echo "Triggering updatemanifestjob"
+        build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.BUILD_NUMBER)]
     }
 }
