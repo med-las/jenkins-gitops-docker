@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+    }
+
     stages {
         stage('Clone repository') {
             steps {
@@ -12,19 +16,20 @@ pipeline {
             steps {
                 script {
                     // Build Docker image
-                    def app = docker.build("medlas/odoo:${env.BUILD_NUMBER}")
+                    def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
                 }
             }
         }
 
-        stage('Run Docker Compose') {
-            steps {
-                script {
-                    // Create and start Docker containers using Docker Compose
-                    sh 'docker-compose up --build -d'
-                }
-            }
+stage('Run Docker Compose') {
+    steps {
+        script {
+            echo "Using Docker tag: ${env.DOCKER_TAG}"
+            sh 'docker-compose up --build -d'
         }
+    }
+}
+
 
         stage('Test image') {
             steps {
@@ -49,8 +54,8 @@ pipeline {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
                         // Push the Docker image
-                        def app = docker.image("medlas/odoo:${env.BUILD_NUMBER}")
-                        app.push("${env.BUILD_NUMBER}")
+                        def app = docker.image("medlas/odoo:${env.DOCKER_TAG}")
+                        app.push("${env.DOCKER_TAG}")
                     }
                 }
             }
@@ -60,7 +65,7 @@ pipeline {
             steps {
                 script {
                     echo "triggering updatemanifestjob"
-                    build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.BUILD_NUMBER)]
+                    build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.DOCKER_TAG)]
                 }
             }
         }
