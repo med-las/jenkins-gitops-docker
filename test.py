@@ -26,7 +26,7 @@ def check_internal_server_error(url, session):
 
 if __name__ == "__main__":
     # Odoo server URL
-    odoo_url = "http://localhost:8069/web"
+    odoo_url = "http://localhost:8066/web"
     
     # Create a requests session
     session = requests.Session()

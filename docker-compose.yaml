@@ -5,7 +5,7 @@ services:
   odoo:
     image: odoo:latest
     ports:
-      - "8069:8069"
+      - "8066:8066"
     depends_on:
       - db
     environment:
