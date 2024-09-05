@@ -15,7 +15,7 @@ pipeline {
         stage('Build image') {
             steps {
                 script {
-                    def app = docker.build("odoo:latest")
+                    def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
                 }
             }
         }
@@ -29,28 +29,15 @@ pipeline {
             }
         }
 
-        stage('Wait for Odoo to start') {
-            steps {
-                script {
-                    // Wait for the Odoo server to be accessible
- timeout(time: 5, unit: 'MINUTES') {
-    waitUntil {
-        def statusCode = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8069/web', returnStatus: true)
-        echo "Current status code: ${statusCode}"
-        return statusCode == 200
-    }
-}
-
-                }
-            }
-        }
-
         stage('Test image') {
             steps {
                 script {
+                    
+                    // Run the test file to check if the Odoo server is running without issues
                     try {
-                        sh "python3 test.py"
+                        sh "python3 test.py" // Run the test file
                     } catch (Exception e) {
+                        // Abort the build if the test fails
                         error("Test failed. Aborting pipeline.")
                     }
                 }
@@ -60,6 +47,7 @@ pipeline {
         stage('Stop and Remove Containers') {
             steps {
                 script {
+                    // Stop and remove containers created by Docker Compose
                     sh 'docker-compose down'
                 }
             }
@@ -69,6 +57,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        // Push the Docker image only if the test passes
                         def app = docker.image("medlas/odoo:${env.DOCKER_TAG}")
                         app.push("${env.DOCKER_TAG}")
                     }
@@ -79,6 +68,7 @@ pipeline {
         stage('Trigger ManifestUpdate') {
             steps {
                 script {
+                    echo "Triggering updatemanifestjob"
                     build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.DOCKER_TAG)]
                 }
             }
