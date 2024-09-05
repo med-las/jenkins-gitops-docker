@@ -1,17 +1,20 @@
-# Use an official Python runtime as a parent image
-FROM python:3.12-alpine
+# Use an official Odoo base image
+FROM odoo:17
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /mnt/extra-addons
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy your custom addons (if any) into the container
+COPY ./addons /mnt/extra-addons
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy test script into the container
+COPY test.py /mnt/extra-addons/
 
-# Make port 5000 available to the world outside this container
-EXPOSE 5000
+# Install dependencies (e.g., requests)
+RUN pip install requests
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Expose the default Odoo port
+EXPOSE 8069
+
+# Run Odoo when the container launches
+CMD ["odoo"]

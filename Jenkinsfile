@@ -6,12 +6,16 @@ node {
     }
 
     stage('Build image') {
-       app = docker.build("medlas/jenkins-flask")
+       app = docker.build("medlas/odoo:${env.BUILD_NUMBER}")
     }
 
     stage('Test image') {
         app.inside {
-            sh 'echo "Tests passed"'
+            sh 'echo "Running Odoo tests"'
+            // Install the required Python packages for testing
+            sh 'pip install requests'
+            // Run the test script
+            sh 'python test.py'
         }
     }
 
