@@ -50,7 +50,13 @@ pipeline {
         stage('Test image') {
             steps {
                 script {
-                    sh "python3 test.py" // Run the test file
+                    try {
+                        sh "python3 test.py" // Run the test file
+                    } catch (Exception e) {
+                        echo "Test failed: ${e.getMessage()}"
+                        currentBuild.result = 'FAILURE'
+                        error("Test failed. Aborting pipeline.")
+                    }
                 }
             }
         }
@@ -65,6 +71,11 @@ pipeline {
         }
 
         stage('Push image') {
+            when {
+                expression {
+                    return currentBuild.result == 'SUCCESS'
+                }
+            }
             steps {
                 script {
                     docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
@@ -77,6 +88,11 @@ pipeline {
         }
 
         stage('Trigger ManifestUpdate') {
+            when {
+                expression {
+                    return currentBuild.result == 'SUCCESS'
+                }
+            }
             steps {
                 script {
                     echo "Triggering updatemanifestjob"
