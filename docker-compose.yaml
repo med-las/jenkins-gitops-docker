@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   odoo:
-    image: medlas/odoo:17
+    image: medlas/odoo:${DOCKER_TAG}
     container_name: odoo
     ports:
       - "8069:8069"
@@ -26,7 +26,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   test:
-    image: medlas/odoo:17
+    image: medlas/odoo:${DOCKER_TAG}
     container_name: odoo_test
     volumes:
       - .:/mnt/extra-addons

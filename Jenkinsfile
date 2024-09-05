@@ -12,33 +12,34 @@ pipeline {
             }
         }
 
-        stage('Build image') {
-            steps {
-                script {
-                    // Build Docker image
-                    def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
-                }
-            }
-        }
-
-stage('Run Docker Compose') {
+stage('Build image') {
     steps {
         script {
-            echo "Using Docker tag: ${env.DOCKER_TAG}"
-            sh 'docker-compose up --build -d'
+            def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
         }
     }
 }
 
 
-        stage('Test image') {
-            steps {
-                script {
-                    // Run tests using Docker Compose
-                    sh 'docker-compose run --rm test'
-                }
-            }
+stage('Run Docker Compose') {
+    steps {
+        script {
+            echo "Using Docker tag: ${env.DOCKER_TAG}"
+            sh "docker-compose up --build -d"
         }
+    }
+}
+
+
+
+stage('Test image') {
+    steps {
+        script {
+            sh "docker-compose run --rm test"
+        }
+    }
+}
+
 
         stage('Stop and Remove Containers') {
             steps {
