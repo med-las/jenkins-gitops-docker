@@ -29,10 +29,28 @@ pipeline {
             }
         }
 
+        stage('Wait for Odoo') {
+            steps {
+                script {
+                    // Wait for the Odoo server to be available
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitUntil {
+                            try {
+                                sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8069/web | grep -q "200"', returnStatus: true) == 0
+                            } catch (Exception e) {
+                                echo "Waiting for Odoo server..."
+                                return false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Test image') {
             steps {
                 script {
-                        sh "python3 test.py" // Run the test file
+                    sh "python3 test.py" // Run the test file
                 }
             }
         }
