@@ -15,7 +15,7 @@ pipeline {
         stage('Build image') {
             steps {
                 script {
-                    def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
+                    def app = docker.build("odoo:latest")
                 }
             }
         }
