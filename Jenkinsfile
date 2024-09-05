@@ -32,26 +32,19 @@ pipeline {
         stage('Test image') {
             steps {
                 script {
-                    
-                    // Run the test file to check if the Odoo server is running without issues
-                    try {
                         sh "python3 test.py" // Run the test file
-                    } catch (Exception e) {
-                        // Abort the build if the test fails
-                        error("Test failed. Aborting pipeline.")
-                    }
                 }
             }
         }
 
-        stage('Stop and Remove Containers') {
-            steps {
-                script {
-                    // Stop and remove containers created by Docker Compose
-                    sh 'docker-compose down'
-                }
-            }
-        }
+        // stage('Stop and Remove Containers') {
+        //     steps {
+        //         script {
+        //             // Stop and remove containers created by Docker Compose
+        //             sh 'docker-compose down'
+        //         }
+        //     }
+        // }
 
         stage('Push image') {
             steps {
