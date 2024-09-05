@@ -1,16 +1,11 @@
+# Use an official Odoo base image
 FROM odoo:17
 
-# Set the working directory
+# Set the working directory in the container
 WORKDIR /mnt/extra-addons
 
-# Optionally add your custom addons here if available
-# COPY ./addons /mnt/extra-addons
+# Expose the default Odoo port
+EXPOSE 8069
 
-# Optionally add any other configurations or scripts
-# COPY test.py /mnt/test.py
-
-# Install additional dependencies if needed
-RUN apt-get update && apt-get install -y python3 python3-pip
-
-# Command to run the Odoo server
+# Run Odoo when the container launches
 CMD ["odoo"]
