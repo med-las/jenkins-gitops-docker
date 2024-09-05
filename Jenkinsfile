@@ -33,14 +33,14 @@ pipeline {
             steps {
                 script {
                     // Wait for the Odoo server to be accessible
-                    timeout(time: 2, unit: 'MINUTES') {
-                        waitUntil {
-                            script {
-                                def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:8069/web", returnStdout: true).trim()
-                                return response == '200'
-                            }
-                        }
-                    }
+ timeout(time: 5, unit: 'MINUTES') {
+    waitUntil {
+        def statusCode = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8069/web', returnStatus: true)
+        echo "Current status code: ${statusCode}"
+        return statusCode == 200
+    }
+}
+
                 }
             }
         }
