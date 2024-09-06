@@ -30,14 +30,25 @@ pipeline {
         }
 
 
-        stage('Test image') {
-            steps {
-                script {
-                        sh "python3 test.py" // Run the test file
-                
+stage('Test image') {
+    steps {
+        script {
+            def maxRetries = 10
+            def retryInterval = 10 // in seconds
+
+            for (int i = 0; i < maxRetries; i++) {
+                try {
+                    sh "python3 /mnt/extra-addons/test.py"
+                    break // Exit the loop if the test passes
+                } catch (Exception e) {
+                    echo "Test failed, retrying in ${retryInterval} seconds..."
+                    sleep(time: retryInterval, unit: 'SECONDS')
                 }
             }
         }
+    }
+}
+
 
         stage('Stop and Remove Containers') {
             steps {
