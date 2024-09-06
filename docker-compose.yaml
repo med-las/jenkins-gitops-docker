@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   odoo:
     image: odoo:17
     ports:
@@ -22,7 +21,7 @@ services:
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: intel_internship_ppwwwdd
-      POSTGRES_DB: postgres
+      POSTGRES_DB: odoo
     volumes:
       - postgres-data:/var/lib/postgresql/data
 

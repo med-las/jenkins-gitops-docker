@@ -20,52 +20,21 @@ pipeline {
             }
         }
 
-        stage('Run Docker Compose') {
+        stage('Run Tests') {
             steps {
                 script {
-                    echo "Using Docker tag: ${env.DOCKER_TAG}"
-                    sh "docker-compose up --build -d"
-                }
-            }
-        }
-
-        stage('Wait for Odoo') {
-            steps {
-                script {
-                    // Wait for the Odoo server to be available
-                    timeout(time: 2, unit: 'MINUTES') {
-                        waitUntil {
-                            try {
-                                sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8069/web | grep -q "200"', returnStatus: true) == 0
-                            } catch (Exception e) {
-                                echo "Waiting for Odoo server..."
-                                return false
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Test image') {
-            steps {
-                script {
+                    // Run the container with the test script
+                    def testContainer = docker.image("medlas/odoo:${env.DOCKER_TAG}").run("-d")
                     try {
-                        sh "python3 test.py" // Run the test file
-                    } catch (Exception e) {
-                        echo "Test failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                        error("Test failed. Aborting pipeline.")
+                        // Wait for Odoo to start
+                        sleep 60
+                        // Run the test script
+                        sh 'docker exec test-container python3 /mnt/extra-addons/test.py'
+                    } finally {
+                        // Clean up the container
+                        sh 'docker stop test-container'
+                        sh 'docker rm test-container'
                     }
-                }
-            }
-        }
-
-        stage('Stop and Remove Containers') {
-            steps {
-                script {
-                    // Stop and remove containers created by Docker Compose
-                    sh 'docker-compose down'
                 }
             }
         }
@@ -78,10 +47,9 @@ pipeline {
             }
             steps {
                 script {
-                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
-                        // Push the Docker image only if the test passes
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials-id') {
                         def app = docker.image("medlas/odoo:${env.DOCKER_TAG}")
-                        app.push("${env.DOCKER_TAG}")
+                        app.push('latest')
                     }
                 }
             }
@@ -95,7 +63,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Triggering updatemanifestjob"
+                    echo "Triggering ManifestUpdate job"
                     build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.DOCKER_TAG)]
                 }
             }
