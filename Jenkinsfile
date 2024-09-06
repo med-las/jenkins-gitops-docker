@@ -33,21 +33,21 @@ pipeline {
 stage('Test image') {
     steps {
         script {
-            def maxRetries = 10
-            def retryInterval = 10 // in seconds
+            echo "Waiting for Odoo server to be ready..."
+            sleep(time: 60, unit: 'SECONDS') // Adjust the wait time if needed
 
-            for (int i = 0; i < maxRetries; i++) {
-                try {
-                    sh "python3 /mnt/extra-addons/test.py"
-                    break // Exit the loop if the test passes
-                } catch (Exception e) {
-                    echo "Test failed, retrying in ${retryInterval} seconds..."
-                    sleep(time: retryInterval, unit: 'SECONDS')
-                }
-            }
+            echo "Checking server status"
+            sh "docker-compose exec odoo curl -s http://localhost:8069/web > /dev/null && echo 'Server is running' || echo 'Server is not running'"
+
+            echo "Listing files in /mnt/extra-addons"
+            sh "docker-compose exec odoo ls /mnt/extra-addons"
+            
+            // Run the test file
+            sh "docker-compose exec odoo python3 /mnt/extra-addons/test.py"
         }
     }
 }
+
 
 
         stage('Stop and Remove Containers') {
