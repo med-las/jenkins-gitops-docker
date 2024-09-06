@@ -20,21 +20,30 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Docker Compose') {
             steps {
                 script {
-                    // Run the container with the test script
-                    def testContainer = docker.image("medlas/odoo:${env.DOCKER_TAG}").run("-d")
-                    try {
-                        // Wait for Odoo to start
-                        sleep 60
-                        // Run the test script
-                        sh 'docker exec test-container python3 /mnt/extra-addons/test.py'
-                    } finally {
-                        // Clean up the container
-                        sh 'docker stop test-container'
-                        sh 'docker rm test-container'
-                    }
+                    echo "Using Docker tag: ${env.DOCKER_TAG}"
+                    sh "docker-compose up --build -d"
+                }
+            }
+        }
+
+
+        stage('Test image') {
+            steps {
+                script {
+                        sh "python3 test.py" // Run the test file
+                
+                }
+            }
+        }
+
+        stage('Stop and Remove Containers') {
+            steps {
+                script {
+                    // Stop and remove containers created by Docker Compose
+                    sh 'docker-compose down'
                 }
             }
         }
@@ -47,9 +56,10 @@ pipeline {
             }
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-credentials-id') {
+                    docker.withRegistry('https://registry.hub.docker.com', 'dockerhub') {
+                        // Push the Docker image only if the test passes
                         def app = docker.image("medlas/odoo:${env.DOCKER_TAG}")
-                        app.push('latest')
+                        app.push("${env.DOCKER_TAG}")
                     }
                 }
             }
@@ -63,7 +73,7 @@ pipeline {
             }
             steps {
                 script {
-                    echo "Triggering ManifestUpdate job"
+                    echo "Triggering updatemanifestjob"
                     build job: 'updatemanifest', parameters: [string(name: 'DOCKERTAG', value: env.DOCKER_TAG)]
                 }
             }
