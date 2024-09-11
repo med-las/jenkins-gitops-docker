@@ -37,13 +37,13 @@ stage('Test image') {
             sleep(time: 30, unit: 'SECONDS') // Adjust the wait time if needed
 
             echo "Checking server status"
-            sh "docker exec buildimage-odoo-1 curl -s http://localhost:8069/web > /dev/null && echo 'Server is running' || echo 'Server is not running'"
+            sh "docker exec odoo curl -s http://localhost:8069/web > /dev/null && echo 'Server is running' || echo 'Server is not running'"
 
             echo "Listing files in /mnt/extra-addons"
-            sh "docker exec buildimage-odoo-1 ls /mnt/extra-addons"
+            sh "docker exec odoo ls /mnt/extra-addons"
             
             // Run the test file
-            sh "docker exec buildimage-odoo-1 python3 /mnt/extra-addons/test.py"
+            sh "docker exec odoo python3 /mnt/extra-addons/test.py"
         }
     }
 }
