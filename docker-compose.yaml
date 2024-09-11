@@ -1,30 +1,31 @@
 version: '3.8'
 
 services:
+
   odoo:
-    image: medlas/odoo:${DOCKER_TAG}
-    container_name: odoo
+    image: odoo:17.0
     ports:
       - "8069:8069"
-    volumes:
-      - odoo_data:/mnt/extra-addons
+    depends_on:
+      - db
     environment:
       - HOST=db
       - USER=odoo
-      - PASSWORD=odoo
-    depends_on:
-      - db
+      - PASSWORD=intel_internship_ppwwwdd
+    volumes:
+      - odoo-data:/var/lib/odooa
+      - ./custom-addons:/mnt/extra-addons
+      - ./odoo_conf:/etc/odoo
 
   db:
-    image: postgres:13
-    container_name: odoo_db
+    image: postgres:15
     environment:
       POSTGRES_USER: odoo
-      POSTGRES_PASSWORD: odoo
-      POSTGRES_DB: odoo
+      POSTGRES_PASSWORD: intel_internship_ppwwwdd
+      POSTGRES_DB: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
 
 volumes:
-  odoo_data:
-  postgres_data:
+  odoo-data:
+  postgres-data:
