@@ -12,13 +12,13 @@ pipeline {
             }
         }
 
-        // stage('Build image') {
-        //     steps {
-        //         script {
-        //             def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
-        //         }
-        //     }
-        // }
+        stage('Build image') {
+            steps {
+                script {
+                    def app = docker.build("medlas/odoo:${env.DOCKER_TAG}")
+                }
+            }
+        }
 
         stage('Run Docker Compose') {
             steps {
