@@ -4,6 +4,8 @@ services:
 
   odoo:
     image: odoo:17.0
+    container_name: odoo
+
     ports:
       - "8069:8069"
     depends_on:
@@ -19,6 +21,8 @@ services:
 
   db:
     image: postgres:15
+    container_name: odoo_db
+
     environment:
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: intel_internship_ppwwwdd
