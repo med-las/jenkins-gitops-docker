@@ -37,7 +37,7 @@ stage('Test image') {
             sleep(time: 60, unit: 'SECONDS') // Adjust the wait time if needed
 
             echo "Checking server status"
-            sh "docker-compose exec odoo curl -s http://localhost:8069/web > /dev/null && echo 'Server is running' || echo 'Server is not running'"
+            sh "docker-compose exec odoo curl -s http://localhost:8069/web > /dev/null && echo 'Server is running' || echo 'Server is not running' && ls -l /mnt/extra-addons"
 
             echo "Listing files in /mnt/extra-addons"
             sh "docker-compose exec odoo ls /mnt/extra-addons"
