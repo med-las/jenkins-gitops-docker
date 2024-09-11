@@ -3,7 +3,7 @@ version: '3.8'
 services:
 
   odoo:
-    image: medlas/odoo:${DOCKER_TAG}
+    image: odoo:17.0
     container_name: odoo
 
     ports:
